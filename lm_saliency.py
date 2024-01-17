@@ -84,9 +84,10 @@ def saliency(model, input_ids, input_mask, batch=0, correct=None, foil=None):
 
 def integrated_gradients(
     inp, 
-    target_label_index,
-    predictions_and_gradients,
-    baseline,
+    grads,
+    # target_label_index,
+    # predictions_and_gradients,
+    # baseline,
     steps=50):
   """Computes integrated gradients for a given network and prediction label.
 
@@ -158,7 +159,7 @@ def integrated_gradients(
 
   # Scale input and compute gradients.
   scaled_inputs = [baseline + (float(i)/steps)*(inp-baseline) for i in range(0, steps+1)]
-  grads, predictions= predictions_and_gradients(scaled_inputs, target_label_index)  # shapes: <steps+1>, <steps+1, inp.shape>
+  # grads, predictions= predictions_and_gradients(scaled_inputs, target_label_index)  # shapes: <steps+1>, <steps+1, inp.shape>
   
   # Use trapezoidal rule to approximate the integral.
   # See Section 4 of the following paper for an accuracy comparison between
@@ -168,7 +169,7 @@ def integrated_gradients(
   grads = (grads[:-1] + grads[1:]) / 2.0
   avg_grads = np.average(grads, axis=0)
   integrated_gradients = (inp-baseline)*avg_grads  # shape: <inp.shape>
-  return integrated_gradients, predictions
+  return integrated_gradients #, predictions
 
 def input_x_gradient(grads, embds, normalize=False):
     input_grad = np.sum(grads * embds, axis=-1).squeeze()
