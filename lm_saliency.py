@@ -87,7 +87,7 @@ def integrated_gradients(
     grads,
     # target_label_index,
     # predictions_and_gradients,
-    # baseline,
+    baseline = None,
     steps=50):
   """Computes integrated gradients for a given network and prediction label.
 
