@@ -167,9 +167,9 @@ def integrated_gradients(
   # "Computing Linear Restrictions of Neural Networks", Matthew Sotoudeh, Aditya V. Thakur
   # https://arxiv.org/abs/1908.06214
   grads = (grads[:-1] + grads[1:]) / 2.0
-  avg_grads = np.average(grads, axis=-1).squeeze()
+  avg_grads = np.average(grads, axis=0)
   integrated_gradients = (inp-baseline)*avg_grads  # shape: <inp.shape>
-  return integrated_gradients #, predictions
+  return np.sum(integrated_gradients, axis = -1) #, predictions
 
 def input_x_gradient(grads, embds, normalize=False):
     input_grad = np.sum(grads * embds, axis=-1).squeeze()
