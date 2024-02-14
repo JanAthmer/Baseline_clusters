@@ -201,9 +201,9 @@ def erasure_scores(model, input_ids, input_mask, correct=None, foil=None, remove
     logits = A.logits[0][-1]
     probs = softmax(logits)
     if foil is not None and correct != foil:
-        base_score = (probs[correct]-probs[foil]).detach().cpu().numpy()
+        base_score = (logits[correct]-logits[foil]).detach().cpu().numpy() #HIER
     else:
-        base_score = (probs[correct]).detach().cpu().numpy()
+        base_score = (logits[correct]).detach().cpu().numpy()  #HIER
 
     scores = np.zeros(len(input_ids[0]))
     for i in range(len(input_ids[0])):
@@ -219,9 +219,9 @@ def erasure_scores(model, input_ids, input_mask, correct=None, foil=None, remove
         logits = A.logits[0][-1]
         probs = softmax(logits)
         if foil is not None and correct != foil:
-            erased_score = (probs[correct]-probs[foil]).detach().cpu().numpy()
+            erased_score = (logits[correct]-logits[foil]).detach().cpu().numpy() #HIER
         else:
-            erased_score = (probs[correct]).detach().cpu().numpy()
+            erased_score = (logits[correct]).detach().cpu().numpy() #HIER
                     
         scores[i] = base_score - erased_score # higher score = lower confidence in correct = more influential input
     if normalize:
