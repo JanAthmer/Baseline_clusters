@@ -16,3 +16,5 @@ train.parquet
 Dendrogram_Result_Normalized+fix_1.png
 Dendrogram_Result_Normalized+fix_NN.png
 .ipynb_checkpoints/Inseq-checkpoint.ipynb
+determiner_noun_agreement_1.jsonl
+npi_present_2.jsonl
