@@ -73,12 +73,15 @@ def saliency(model, input_ids, input_mask, batch=0, correct=None, foil=None):
     A = model(input_ids, attention_mask=input_mask)
     softmax = torch.nn.Softmax(dim=0)
     logits = A.logits[-1]
-    probs = softmax(logits)
+    # probs = softmax(logits)
+    print(f'logits[correct] = {logits[correct]}')
 
     if foil is not None and correct != foil:
-        (probs[correct]-probs[foil]).backward()
+        print(f'logits[foil] = {logits[foil]}')
+        print(f'logits[correct] - logits[foil] = {logits[correct] - logits[foil]}')
+        (logits[correct]-logits[foil]).backward()
     else:
-        (probs[correct]).backward()
+        (logits[correct]).backward()
     handle.remove()
     hook.remove()
 
