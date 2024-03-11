@@ -14,7 +14,7 @@ from transformers import (
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 
-plt.rcParams['figure.figsize'] = [10, 10]
+plt.rcParams['figure.figsize'] = [3, 3]
 
 config = GPT2Config.from_pretrained("gpt2")
 VOCAB_SIZE = config.vocab_size
