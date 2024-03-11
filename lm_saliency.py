@@ -80,9 +80,7 @@ def saliency(model, input_ids, input_mask, batch=0, correct=None, foil=None):
         # print(f'logits[foil] = {logits[foil]}')
         # print(f'logits[correct] - logits[foil] = {logits[correct] - logits[foil]}')
         diff = logits[correct]-logits[foil]
-        if logits[correct] < 0 and diff > 0:
-            diff = diff * -1
-        if logits[correct] > 0 and diff < 0:
+        if (logits[correct] < 0 and diff > 0) or (logits[correct] > 0 and diff < 0):
             diff = diff * -1
         diff.backward()
     else:
@@ -123,7 +121,10 @@ def erasure_scores(model, input_ids, input_mask, correct=None, foil=None, remove
     logits = A.logits[0][-1]
     probs = softmax(logits)
     if foil is not None and correct != foil:
-        base_score = (logits[correct]-logits[foil]).detach().cpu().numpy() #HIER
+        diff = logits[correct]-logits[foil]
+        if (logits[correct] < 0 and diff > 0) or (logits[correct] > 0 and diff < 0):
+            diff = diff * -1
+        base_score = (diff).detach().cpu().numpy() #HIER
     else:
         base_score = (logits[correct]).detach().cpu().numpy()  #HIER
 
@@ -141,7 +142,10 @@ def erasure_scores(model, input_ids, input_mask, correct=None, foil=None, remove
         logits = A.logits[0][-1]
         probs = softmax(logits)
         if foil is not None and correct != foil:
-            erased_score = (logits[correct]-logits[foil]).detach().cpu().numpy() #HIER
+            diff = logits[correct]-logits[foil]
+            if (logits[correct] < 0 and diff > 0) or (logits[correct] > 0 and diff < 0):
+                diff = diff * -1
+            erased_score = (diff).detach().cpu().numpy() #HIER
         else:
             erased_score = (logits[correct]).detach().cpu().numpy() #HIER
                     
