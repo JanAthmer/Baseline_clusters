@@ -82,6 +82,8 @@ def saliency(model, input_ids, input_mask, batch=0, correct=None, foil=None):
         diff = logits[correct]-logits[foil]
         if logits[correct] < 0 and diff > 0:
             diff = diff * -1
+        if logits[correct] > 0 and diff < 0:
+            diff = diff * -1
         diff.backward()
     else:
         (logits[correct]).backward()
