@@ -73,6 +73,10 @@ def saliency(model, input_ids, input_mask, batch=0, correct=None, foil=None):
     A = model(input_ids, attention_mask=input_mask)
     softmax = torch.nn.Softmax(dim=0)
     logits = A.logits[-1]
+    print(logits)
+    print('---')
+    print(logits[correct])
+    print(logits[foil])
     # probs = softmax(logits)
     # print(f'logits[correct] = {logits[correct]}')
 
@@ -80,8 +84,9 @@ def saliency(model, input_ids, input_mask, batch=0, correct=None, foil=None):
         # print(f'logits[foil] = {logits[foil]}')
         # print(f'logits[correct] - logits[foil] = {logits[correct] - logits[foil]}')
         diff = logits[correct]-logits[foil]
-        if (logits[correct] < 0 and diff > 0) or (logits[correct] > 0 and diff < 0):
-            diff = diff * -1
+        # if (logits[correct] < 0 and diff > 0) or (logits[correct] > 0 and diff < 0):
+            # diff = diff * -1
+        print(diff)
         diff.backward()
     else:
         (logits[correct]).backward()
