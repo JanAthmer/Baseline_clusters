@@ -74,23 +74,16 @@ def saliency(model, input_ids, input_mask, batch=0, correct=None, foil=None):
     softmax = torch.nn.Softmax(dim=0)
     logits = A.logits[-1]
     logbits = A.logits[0][-1]
-    torch.set_printoptions(profile="full")
-    print('------------------------------------------------------- LOGITS -------------------------------------------------------')
-    print(logits) # prints the whole tensor
-    print('------------------------------------------------------- ------ -------------------------------------------------------')
-    print('------------------------------------------------------- LOGBITS -------------------------------------------------------')
-    print(logbits) # prints the whole tensor
-    print('------------------------------------------------------- ------ -------------------------------------------------------')
     if foil is not None and correct != foil:
         # print(f'logits[foil] = {logits[foil]}')
         # print(f'logits[correct] - logits[foil] = {logits[correct] - logits[foil]}')
-        diff = logits[correct]-logits[foil]
+        diff = logbits[correct]-logbits[foil]
         # if (logits[correct] < 0 and diff > 0) or (logits[correct] > 0 and diff < 0):
             # diff = diff * -1
         print(diff)
         diff.backward()
     else:
-        (logits[correct]).backward()
+        (logbits[correct]).backward()
     handle.remove()
     hook.remove()
 
