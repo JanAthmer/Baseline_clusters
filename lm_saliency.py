@@ -73,13 +73,14 @@ def saliency(model, input_ids, input_mask, batch=0, correct=None, foil=None):
     A = model(input_ids, attention_mask=input_mask)
     softmax = torch.nn.Softmax(dim=0)
     logits = A.logits[-1]
-    print(logits)
-    print('---')
-    print(logits[correct])
-    print(logits[foil])
-    # probs = softmax(logits)
-    # print(f'logits[correct] = {logits[correct]}')
-
+    logbits = A.logits[0][-1]
+    torch.set_printoptions(profile="full")
+    print('------------------------------------------------------- LOGITS -------------------------------------------------------')
+    print(logits) # prints the whole tensor
+    print('------------------------------------------------------- ------ -------------------------------------------------------')
+    print('------------------------------------------------------- LOGBITS -------------------------------------------------------')
+    print(logbits) # prints the whole tensor
+    print('------------------------------------------------------- ------ -------------------------------------------------------')
     if foil is not None and correct != foil:
         # print(f'logits[foil] = {logits[foil]}')
         # print(f'logits[correct] - logits[foil] = {logits[correct] - logits[foil]}')
