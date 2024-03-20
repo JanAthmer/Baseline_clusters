@@ -105,7 +105,7 @@ def l1_grad_norm(grads, normalize=False):
         norm = np.linalg.norm(l1_grad, ord=1)
         l1_grad /= norm
     return l1_grad
-def erasure_scores(model, input_ids, input_mask, correct=None, foil=None, remove=False, normalize=False):
+def erasure_scores(model, input_ids, input_mask, correct=None, foil=None, remove=False, normalize=False, attr_fn = "probs"):
     model.eval()
     if correct is None:
         correct = input_ids[-1]
@@ -119,12 +119,16 @@ def erasure_scores(model, input_ids, input_mask, correct=None, foil=None, remove
     logits = A.logits[0][-1]
     probs = softmax(logits)
     if foil is not None and correct != foil:
-        diff = logits[correct]-logits[foil]
-        if (logits[correct] < 0 and diff > 0) or (logits[correct] > 0 and diff < 0):
-            diff = diff * -1
+        if attr_fn == "probs":
+            diff = probs[correct]-probs[foil]
+        elif attr_fn == "logit":
+            diff = logits[correct]-logits[foil]
         base_score = (diff).detach().cpu().numpy() #HIER
     else:
-        base_score = (logits[correct]).detach().cpu().numpy()  #HIER
+        if attr_fn == "probs":
+            base_score = (probs[correct]).detach().cpu().numpy()  #HIER
+        elif attr_fn == "logit":
+            base_score = (logits[correct]).detach().cpu().numpy()  #HIER
 
     scores = np.zeros(len(input_ids[0]))
     for i in range(len(input_ids[0])):
@@ -139,13 +143,17 @@ def erasure_scores(model, input_ids, input_mask, correct=None, foil=None, remove
         A = model(input_ids_i, attention_mask=input_mask_i)
         logits = A.logits[0][-1]
         probs = softmax(logits)
-        if foil is not None and correct != foil:
+    if foil is not None and correct != foil:
+        if attr_fn == "probs":
+            diff = probs[correct]-probs[foil]
+        elif attr_fn == "logit":
             diff = logits[correct]-logits[foil]
-            if (logits[correct] < 0 and diff > 0) or (logits[correct] > 0 and diff < 0):
-                diff = diff * -1
-            erased_score = (diff).detach().cpu().numpy() #HIER
-        else:
-            erased_score = (logits[correct]).detach().cpu().numpy() #HIER
+        erased_score = (diff).detach().cpu().numpy() #HIER
+    else:
+        if attr_fn == "probs":
+            erased_score = (probs[correct]).detach().cpu().numpy()  #HIER
+        elif attr_fn == "logit":
+            erased_score = (logits[correct]).detach().cpu().numpy()  #HIER
                     
         scores[i] = base_score - erased_score # higher score = lower confidence in correct = more influential input
     if normalize:
