@@ -1,4 +1,4 @@
-import argparse, json
+limport argparse, json
 import random
 import torch
 import numpy as np
@@ -151,7 +151,7 @@ def erasure_scores(model, input_ids, input_mask, correct=None, foil=None, remove
                 erased_score = (probs[correct]-probs[foil]).detach().cpu().numpy()
             else:
                 erased_score = (probs[correct]).detach().cpu().numpy()
-        if attr_fn == "probabilities":
+        elif attr_fn == "probabilities":
             if foil is not None and correct != foil:
                 erased_score = (probs[correct]-probs[foil]).detach().cpu().numpy()
             else:
