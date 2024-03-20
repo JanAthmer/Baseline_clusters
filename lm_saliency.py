@@ -105,12 +105,11 @@ def l1_grad_norm(grads, normalize=False):
         norm = np.linalg.norm(l1_grad, ord=1)
         l1_grad /= norm
     return l1_grad
-def erasure_scores(model, input_ids, input_mask, correct=None, foil=None, remove=False, normalize=False, attr_fn = "probs"):
+def erasure_scores(model, input_ids, input_mask, correct=None, foil=None, remove=False, normalize=False, attr_fn = "logits"):
     model.eval()
     if correct is None:
-        correct = input_ids[-1]
-    input_ids = input_ids[:-1]
-    input_mask = input_mask[:-1]
+        raise Exception("No target was give. use correct = ")
+        
     input_ids = torch.unsqueeze(torch.tensor(input_ids, dtype=torch.long).to(model.device), 0)
     input_mask = torch.unsqueeze(torch.tensor(input_mask, dtype=torch.long).to(model.device), 0)
     
@@ -118,17 +117,20 @@ def erasure_scores(model, input_ids, input_mask, correct=None, foil=None, remove
     softmax = torch.nn.Softmax(dim=0)
     logits = A.logits[0][-1]
     probs = softmax(logits)
-    if foil is not None and correct != foil:
-        if attr_fn == "probs":
-            diff = probs[correct]-probs[foil]
-        elif attr_fn == "logit":
-            diff = logits[correct]-logits[foil]
-        base_score = (diff).detach().cpu().numpy() #HIER
+    
+    if attr_fn == "logits":
+        if foil is not None and correct != foil:
+            base_score = (logits[correct]-logits[foil]).detach().cpu().numpy()
+        else:
+            base_score = (logits[correct]).detach().cpu().numpy()
+    elif attr_fn == "probabilities":
+        if foil is not None and correct != foil:
+            base_score = (probs[correct]-probs[foil]).detach().cpu().numpy()
+        else:
+            base_score = (probs[correct]).detach().cpu().numpy()
     else:
-        if attr_fn == "probs":
-            base_score = (probs[correct]).detach().cpu().numpy()  #HIER
-        elif attr_fn == "logit":
-            base_score = (logits[correct]).detach().cpu().numpy()  #HIER
+        raise Exception("unknown attr_fn")
+        
 
     scores = np.zeros(len(input_ids[0]))
     for i in range(len(input_ids[0])):
@@ -143,17 +145,19 @@ def erasure_scores(model, input_ids, input_mask, correct=None, foil=None, remove
         A = model(input_ids_i, attention_mask=input_mask_i)
         logits = A.logits[0][-1]
         probs = softmax(logits)
-    if foil is not None and correct != foil:
-        if attr_fn == "probs":
-            diff = probs[correct]-probs[foil]
-        elif attr_fn == "logit":
-            diff = logits[correct]-logits[foil]
-        erased_score = (diff).detach().cpu().numpy() #HIER
-    else:
-        if attr_fn == "probs":
-            erased_score = (probs[correct]).detach().cpu().numpy()  #HIER
-        elif attr_fn == "logit":
-            erased_score = (logits[correct]).detach().cpu().numpy()  #HIER
+        
+        if attr_fn == "logits":
+            if foil is not None and correct != foil:
+                erased_score = (probs[correct]-probs[foil]).detach().cpu().numpy()
+            else:
+                erased_score = (probs[correct]).detach().cpu().numpy()
+        if attr_fn == "probabilities":
+            if foil is not None and correct != foil:
+                erased_score = (probs[correct]-probs[foil]).detach().cpu().numpy()
+            else:
+                erased_score = (probs[correct]).detach().cpu().numpy()
+        else:
+            raise Exception("unknown attr_fn")
                     
         scores[i] = base_score - erased_score # higher score = lower confidence in correct = more influential input
     if normalize:
